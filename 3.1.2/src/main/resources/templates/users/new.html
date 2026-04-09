@@ -2,60 +2,195 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>New person</title>
+    <title>New User</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        label { display: block; margin: 10px 0 5px; }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+        }
+        .main-wrapper {
+            display: flex;
+            min-height: calc(100vh - 56px);
+        }
+        .sidebar {
+            width: 250px;
+            min-width: 250px;
+            flex-shrink: 0;
+            background-color: white;
+            padding: 20px 0;
+            border-right: 1px solid #dee2e6;
+        }
+        .sidebar .nav-link {
+            color: #495057;
+            padding: 10px 20px;
+            display: block;
+            text-decoration: none;
+        }
+        .sidebar .nav-link:hover {
+            background-color: #f8f9fa;
+        }
+        .sidebar .nav-link.active {
+            background-color: #007bff;
+            color: white;
+        }
+        .content {
+            flex: 1;
+            padding: 30px;
+        }
+        .container {
+            max-width: 100%;
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            margin-bottom: 30px;
+            font-size: 28px;
+            font-weight: 600;
+        }
+        .role-item + .role-item::before {
+            content: ", ";
+        }
+        .nav-tabs {
+            border-bottom: 1px solid #dee2e6;
+            margin-bottom: 0;
+        }
+        .nav-tabs .nav-link {
+            border: 1px solid transparent;
+            border-top-left-radius: 0.25rem;
+            border-top-right-radius: 0.25rem;
+            color: #495057;
+            padding: 10px 20px;
+        }
+        .nav-tabs .nav-link:hover {
+            border-color: #e9ecef #e9ecef #dee2e6;
+        }
+        .nav-tabs .nav-link.active {
+            color: #495057;
+            background-color: #fff;
+            border-color: #dee2e6 #dee2e6 #fff;
+        }
+        .tab-content {
+            border: 1px solid #dee2e6;
+            border-top: none;
+            padding: 20px;
+            background-color: white;
+        }
+        .form-label {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        .form-control, .form-select {
+            margin-bottom: 15px;
+        }
+        .btn-primary {
+            background-color: #28a745;
+            border-color: #28a745;
+        }
+        .btn-primary:hover {
+            background-color: #218838;
+            border-color: #1e7e34;
+        }
+        .btn-secondary {
+            margin-right: 10px;
+        }
+        .error-message {
+            color: #dc3545;
+            font-size: 0.875rem;
+            margin-top: -10px;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
+    <nav class="navbar navbar-dark bg-dark px-3">
+        <div class="container-fluid">
+            <div class="navbar-text text-white fw-bold">
+                <span th:text="'Пользователь: '+ ${#authentication.name} + ', '">Username</span>
+                <span> с ролью: </span>
+                <span th:each="auth : ${#authentication.authorities}"
+                      th:if="${auth.authority != null && auth.authority.startsWith('ROLE_')}"
+                      class="role-item"
+                      th:text="${#strings.replace(auth.authority, 'ROLE_', '')}"></span>
+            </div>
+            <div class="d-flex">
+                <form th:action="@{/logout}" method="post">
+                    <button type="submit" class="btn btn-sm btn-outline-light">Logout</button>
+                </form>
+            </div>
+        </div>
+    </nav>
 
-<form th:method="post" th:action="@{/admin/create}" th:object="${user}">
-    <label for="username">Введите имя</label>
-    <input type="text" th:field="*{username}" id="username"/>
-    <div style="color: red"
-         th:if="${#fields.hasErrors('username')}"
-         th:errors="*{username}">Name error</div>
+    <div class="main-wrapper">
+        <div class="sidebar">
+            <nav class="nav flex-column">
+                <a href="/admin" class="nav-link active">Admin</a>
+                <a href="/user" class="nav-link">User</a>
+            </nav>
+        </div>
 
-    <p></p>
+        <div class="content">
+            <div class="container">
+                <h1>Admin panel</h1>
 
-    <label for="email">Введите Email</label>
-    <input type="text" th:field="*{email}" id="email"/>
-    <div style="color: red"
-         th:if="${#fields.hasErrors('email')}"
-         th:errors="*{email}">Email error</div>
+                <ul class="nav nav-tabs">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin">Users table</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/admin/new">New User</a>
+                    </li>
+                </ul>
 
-    <p></p>
+                <div class="tab-content">
+                    <h5 class="mb-4">Add new user</h5>
 
-    <label for="age">Введите возраст</label>
-    <input type="text" th:field="*{age}" id="age"/>
-    <div style="color: red"
-         th:if="${#fields.hasErrors('age')}"
-         th:errors="*{age}">Age error</div>
+                    <form th:method="post" th:action="@{/admin/create}" th:object="${user}">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label for="username" class="form-label">First name</label>
+                                <input type="text" th:field="*{username}" id="username" class="form-control" placeholder="First name"/>
+                                <div class="error-message"
+                                     th:if="${#fields.hasErrors('username')}"
+                                     th:errors="*{username}">Name error</div>
 
-    <p></p>
+                                <label for="age" class="form-label">Age</label>
+                                <input type="text" th:field="*{age}" id="age" class="form-control" placeholder="Age"/>
+                                <div class="error-message"
+                                     th:if="${#fields.hasErrors('age')}"
+                                     th:errors="*{age}">Age error</div>
 
-    <label for="password">Введите пароль</label>
-    <input type="password" th:field="*{password}" id="password"/>
+                                <label for="email" class="form-label">Email</label>
+                                <input type="text" th:field="*{email}" id="email" class="form-control" placeholder="Email"/>
+                                <div class="error-message"
+                                     th:if="${#fields.hasErrors('email')}"
+                                     th:errors="*{email}">Email error</div>
 
-    <p></p>
+                                <label for="password" class="form-label">Password</label>
+                                <input type="password" th:field="*{password}" id="password" class="form-control" placeholder="Password"/>
 
-    <label>Выберите роли:</label>
-    <div th:each="role : ${allRoles}">
-        <input type="checkbox" th:field="*{roles}" th:value="${role.id}" th:id="${'role' + role.id}"/>
-        <label th:for="${'role' + role.id}" th:text="${role.name}">Role</label>
+                                <label class="form-label">Role</label>
+                                <div th:each="role : ${allRoles}">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" th:field="*{roles}" th:value="${role.id}" th:id="${'role' + role.id}"/>
+                                        <label class="form-check-label" th:for="${'role' + role.id}" th:text="${role.name}">Role</label>
+                                    </div>
+                                </div>
+
+                                <div class="mt-3">
+                                    <button type="submit" class="btn btn-primary">Add new user</button>
+                                    <a th:href="@{/admin}" class="btn btn-secondary">Close</a>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
-
-    <p></p>
-
-    <input type="submit" value="Create"/>
-    <p></p>
-    <a th:href="@{/admin}">Назад</a>
-</form>
-
-<br/><br/>
-<form th:action="@{/logout}" method="post">
-    <button type="submit">Logout</button>
-</form>
-
 </body>
 </html>

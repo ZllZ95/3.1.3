@@ -2,6 +2,7 @@ package ru.kata.pp312.controller;
 
 import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -12,6 +13,7 @@ import ru.kata.pp312.service.UserService;
 
 @Controller
 @RequestMapping("/admin")
+@Transactional
 public class AdminController {
 
 
@@ -27,6 +29,7 @@ public class AdminController {
     @GetMapping
     public String index(Model model) {
         model.addAttribute("users", userService.index());
+        model.addAttribute("allRoles", roleService.getAllRoles());
         return "users/index";
     }
 
@@ -45,10 +48,13 @@ public class AdminController {
         return "users/new";
     }
 
-    // создание – POST /users/create
+
     @PostMapping("/create")
     public String create(@ModelAttribute("user") @Valid User user,
                          BindingResult bindingResult, Model model) {
+        if (userService.findByUsername(user.getUsername()) != null) {
+            bindingResult.rejectValue("username", "error.user", "Пользователь с таким именем уже существует");
+        }
         if (bindingResult.hasErrors()) {
             model.addAttribute("allRoles", roleService.getAllRoles());
             return "users/new";
@@ -70,6 +76,10 @@ public class AdminController {
     public String update(@RequestParam("id") int id,
                          @ModelAttribute("user") @Valid User user,
                          BindingResult bindingResult, Model model) {
+        User existingUser = userService.findByUsername(user.getUsername());
+        if (existingUser != null && existingUser.getId() != id) {
+            bindingResult.rejectValue("username", "error.user", "Пользователь с таким именем уже существует");
+        }
         if (bindingResult.hasErrors()) {
             model.addAttribute("allRoles", roleService.getAllRoles());
             return "users/edit";
