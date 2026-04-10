@@ -2,7 +2,7 @@ package ru.kata.pp312.controller;
 
 import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
-import org.springframework.transaction.annotation.Transactional;
+
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -13,7 +13,7 @@ import ru.kata.pp312.service.UserService;
 
 @Controller
 @RequestMapping("/admin")
-@Transactional
+
 public class AdminController {
 
 
@@ -52,8 +52,11 @@ public class AdminController {
     @PostMapping("/create")
     public String create(@ModelAttribute("user") @Valid User user,
                          BindingResult bindingResult, Model model) {
-        if (userService.findByUsername(user.getUsername()) != null) {
+        try {
+            userService.findByUsername(user.getUsername());
             bindingResult.rejectValue("username", "error.user", "Пользователь с таким именем уже существует");
+        } catch (Exception e) {
+
         }
         if (bindingResult.hasErrors()) {
             model.addAttribute("allRoles", roleService.getAllRoles());
@@ -76,9 +79,13 @@ public class AdminController {
     public String update(@RequestParam("id") int id,
                          @ModelAttribute("user") @Valid User user,
                          BindingResult bindingResult, Model model) {
-        User existingUser = userService.findByUsername(user.getUsername());
-        if (existingUser != null && existingUser.getId() != id) {
-            bindingResult.rejectValue("username", "error.user", "Пользователь с таким именем уже существует");
+        try {
+            User existingUser = userService.findByUsername(user.getUsername());
+            if (existingUser.getId() != id) {
+                bindingResult.rejectValue("username", "error.user", "Пользователь с таким именем уже существует");
+            }
+        } catch (Exception e) {
+
         }
         if (bindingResult.hasErrors()) {
             model.addAttribute("allRoles", roleService.getAllRoles());

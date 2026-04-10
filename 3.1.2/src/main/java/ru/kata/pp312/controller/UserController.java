@@ -2,7 +2,7 @@ package ru.kata.pp312.controller;
 
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
-import org.springframework.transaction.annotation.Transactional;
+
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -10,7 +10,7 @@ import ru.kata.pp312.model.User;
 
 @Controller
 @RequestMapping("/user")
-@Transactional
+
 public class UserController {
 
     @GetMapping
